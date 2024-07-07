@@ -1,0 +1,12 @@
+.grid-Square {
+  display: flex;
+  width: 80px;
+  height: 80px;
+  border: solid;
+  border-radius: 10px;
+  background-color: #4c4c53;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-bottom: 10px;
+}

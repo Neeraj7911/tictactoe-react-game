@@ -1,0 +1,140 @@
+@import url("https://fonts.googleapis.com/css2?family=Happy+Monkey&display=swap");
+body {
+  background-color: #5d59d6;
+  color: white;
+  font-family: "Happy Monkey", system-ui;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+h1 {
+  font-size: 40px;
+  background-color: #4b495f;
+  text-align: center;
+  border-radius: 10px;
+  padding: 5px 20px;
+}
+
+.square-gridss {
+  display: grid;
+  grid-template-columns: repeat(3, 80px); /* Create 3 columns each 80px wide */
+  gap: 15px; /* Adjust the space between squares as needed */
+  justify-content: center;
+  align-items: center;
+  padding-top: 15px;
+}
+.winner-message {
+  font-size: 30px;
+  text-align: center;
+  margin-top: 40px;
+}
+
+.app {
+  text-align: center;
+}
+
+.play-online-button,
+play-vs-computer-button {
+  height: 50px;
+  width: 150px;
+  background-color: orange;
+  color: white;
+  border: solid white;
+  padding: 10px 20px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin: 150px;
+  border-radius: 10px;
+}
+
+.play-online-button:hover {
+  background-color: rgb(165, 117, 26);
+}
+
+/* App.css */
+
+.glow {
+  animation: glow 1s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    background-color: rgba(6, 206, 246, 0.5);
+  }
+  to {
+    background-color: rgba(20, 86, 226, 0.9);
+  }
+}
+
+.glow1:hover {
+  animation: glow 1s ease-in-out infinite alternate;
+}
+
+@keyframes glow1 {
+  from {
+    background-color: rgba(6, 206, 246, 0.5);
+  }
+  to {
+    background-color: rgba(20, 86, 226, 0.9);
+  }
+}
+
+.buttonsz {
+  display: grid;
+  justify-content: center;
+  align-items: center;
+}
+
+.play-online-button,
+.play-vs-computer-button {
+  margin: 40px;
+}
+.app {
+  text-align: center;
+}
+
+.player-circle {
+  background-color: #5d59d6 !important;
+}
+
+.player-cross {
+  background-color: pink !important;
+}
+
+.waiting {
+  text-align: center;
+  padding-top: 50px;
+  font-size: 50px;
+  animation: fadeInOut 1s ease infinite;
+}
+
+@keyframes fadeInOut {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.resetb-container {
+  position: relative; /* Ensure container has a positioned context */
+  width: 100%; /* Ensure full width */
+  display: flex;
+  justify-content: center; /* Center horizontally */
+}
+
+.resetb {
+  padding: 10px 20px; /* Example padding */
+  background-color: #4caf50; /* Example background color */
+  border: white solid;
+  color: white; /* Example text color */
+  cursor: pointer; /* Pointer cursor */
+}
+.turn-indicator {
+  position: relative; /* Ensure container has a positioned context */
+  width: 100%; /* Ensure full width */
+  display: flex;
+  justify-content: center; /* Center horizontally */
+}
