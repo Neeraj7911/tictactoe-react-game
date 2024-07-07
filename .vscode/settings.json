@@ -1,0 +1,4 @@
+{
+  "appService.defaultWebAppToDeploy": "/subscriptions/aec47e8e-af56-4f5e-a9f9-102b2b6a06e2/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/tictactie-react-gamee",
+  "appService.deploySubpath": "."
+}
