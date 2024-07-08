@@ -3,7 +3,7 @@ const { Server } = require("socket.io");
 
 const httpServer = createServer();
 const io = new Server(httpServer, {
-  cors: "http://localhost:5173/",
+  cors: "https://tictactoe-react-game-one.vercel.app",
 });
 
 const allUsers = {};
