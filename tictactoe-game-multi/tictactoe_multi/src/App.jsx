@@ -9,7 +9,8 @@ import Square from "./square/square.jsx"; // Ensure the path is correct
 import io from "socket.io-client";
 import Swal from "sweetalert2"; // Correct import for SweetAlert2
 
-const socket = io('https://tictactoe-server-pheq.onrender.com/');
+const socket = io("https://tictactoe-server-pheq.onrender.com/");
+
 const initialGameState = [
   [null, null, null],
   [null, null, null],
@@ -23,7 +24,7 @@ function App() {
   const [winningPath, setWinningPath] = useState([]);
   const [playOnline, setPlayOnline] = useState(false); // State to track if playing online
   const [playVsComputer, setPlayVsComputer] = useState(false); // State to track if playing vs computer
-  const [socket, setSocket] = useState(null);
+  const [socketClient, setSocketClient] = useState(null);
   const [playerName, setPlayerName] = useState("");
   const [opponentName, setOpponentName] = useState(null);
   const [showResetButton, setShowResetButton] = useState(false);
@@ -37,12 +38,12 @@ function App() {
   }, [currentPlayer, playVsComputer, gameState, winner]);
 
   useEffect(() => {
-    if (socket) {
-      socket.on("start_game", ({ opponent }) => {
+    if (socketClient) {
+      socketClient.on("start_game", ({ opponent }) => {
         setOpponentName(opponent);
       });
 
-      socket.on("opponent_move", ({ rowIndex, colIndex, move }) => {
+      socketClient.on("opponent_move", ({ rowIndex, colIndex, move }) => {
         setGameState((prevGameState) => {
           const newGameState = prevGameState.map((row, rIdx) =>
             row.map((cell, cIdx) =>
@@ -55,17 +56,17 @@ function App() {
         setIsPlayerTurn(true); // Opponent has moved, now it's player's turn
       });
 
-      socket.on("opponent_won", ({ winningLine }) => {
+      socketClient.on("opponent_won", ({ winningLine }) => {
         setWinner("O"); // Opponent ('O') won
         setWinningPath(winningLine);
       });
 
-      socket.on("draw", () => {
+      socketClient.on("draw", () => {
         setWinner("draw");
       });
 
       // Handle opponent disconnection
-      socket.on("opponent_disconnected", () => {
+      socketClient.on("opponent_disconnected", () => {
         Swal.fire({
           title: "Opponent Disconnected",
           text: "Your opponent has left the game.",
@@ -81,7 +82,7 @@ function App() {
         });
       });
     }
-  }, [socket]);
+  }, [socketClient]);
 
   useEffect(() => {
     if (winner) {
@@ -172,7 +173,7 @@ function App() {
     setIsPlayerTurn(false); // Player has moved, now it's opponent's turn
 
     if (playOnline) {
-      socket.emit("player_move", {
+      socketClient.emit("player_move", {
         rowIndex,
         colIndex,
         move: currentPlayer,
@@ -184,12 +185,12 @@ function App() {
       setWinner(currentPlayer); // Current player wins
       setWinningPath(winningLine);
       if (playOnline) {
-        socket.emit("player_won", { winningLine });
+        socketClient.emit("player_won", { winningLine });
       }
     } else if (newGameState.flat().every((cell) => cell)) {
       setWinner("draw"); // It's a draw
       if (playOnline) {
-        socket.emit("draw");
+        socketClient.emit("draw");
       }
     }
   };
@@ -228,7 +229,7 @@ function App() {
         autoConnect: false,
       });
       newSocket.connect(); // Connect the socket when Play Online is clicked
-      setSocket(newSocket);
+      setSocketClient(newSocket);
       newSocket.emit("request_to_play", {
         playerName: name,
       });
@@ -248,17 +249,21 @@ function App() {
     }
   };
 
-  socket?.on("connect", function () {
-    setPlayOnline(true);
-  });
+  useEffect(() => {
+    if (socketClient) {
+      socketClient.on("connect", () => {
+        console.log("Connected to server");
+      });
 
-  socket?.on("OpponentNotFound", () => {
-    setOpponentName(false);
-  });
+      socketClient.on("OpponentNotFound", () => {
+        setOpponentName(false);
+      });
 
-  socket?.on("OpponentFound", (data) => {
-    setOpponentName(data.opponentName);
-  });
+      socketClient.on("OpponentFound", (data) => {
+        setOpponentName(data.opponentName);
+      });
+    }
+  }, [socketClient]);
 
   const handlePlayOnlineClick = () => {
     takePlayerName();
