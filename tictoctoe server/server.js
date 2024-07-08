@@ -1,9 +1,14 @@
+const express = require('express'); // Add express to handle routes
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 
-const httpServer = createServer();
+const app = express();
+const httpServer = createServer(app);
 const io = new Server(httpServer, {
-  cors: "https://tictactoe-react-game-one.vercel.app",
+  cors: {
+    origin: "https://tictactoe-react-game-one.vercel.app", // Fixed CORS origin
+    methods: ["GET", "POST"]
+  }
 });
 
 const allUsers = {};
@@ -13,7 +18,7 @@ io.on("connection", (socket) => {
     socket: socket,
     online: true,
     playing: false,
-    playerName: null, // Add playerName here
+    playerName: null,
     gameBoard: Array(3)
       .fill(null)
       .map(() => Array(3).fill(null)),
@@ -43,7 +48,6 @@ io.on("connection", (socket) => {
         opponentName: currentUser.playerName,
       });
 
-      // Emit start_game event to both players
       currentUser.socket.emit("start_game", {
         opponent: opponentPlayer.playerName,
         gameBoard: currentUser.gameBoard,
@@ -62,7 +66,6 @@ io.on("connection", (socket) => {
       allUsers[socket.id].online = false;
       allUsers[socket.id].playing = false;
 
-      // Notify the opponent if the player disconnects during a game
       for (const key in allUsers) {
         const user = allUsers[key];
         if (user.playing && user.socket !== socket) {
@@ -116,7 +119,14 @@ io.on("connection", (socket) => {
     }
   });
 });
-httpServer.listen(3000, () => {
-  console.log("Server is running on port 3000");
+
+// Optional: Basic route for debugging
+app.get('/', (req, res) => {
+  res.send('Server is running');
 });
 
+// Vercel assigns a port in the PORT environment variable
+const PORT = process.env.PORT || 3000;
+httpServer.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
