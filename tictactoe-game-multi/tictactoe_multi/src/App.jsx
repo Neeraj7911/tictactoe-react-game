@@ -225,9 +225,9 @@ function App() {
       setPlayerName(name);
 
       // Emit the player's name to the server
-      const newSocket = io("https://tictactoe-server-pheq.onrender.com/", {
+    const newSocket = io("https://tictactoe-server-pheq.onrender.com/", {
         autoConnect: false,
-      });
+      }); // Correct server URL
       newSocket.connect(); // Connect the socket when Play Online is clicked
       setSocketClient(newSocket);
       newSocket.emit("request_to_play", {
