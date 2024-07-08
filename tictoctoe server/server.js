@@ -1,12 +1,17 @@
 const express = require("express"); // Add express
 const { createServer } = require("http");
 const { Server } = require("socket.io");
+const cors = require("cors");
 
 const app = express(); // Create express app
 const httpServer = createServer(app); // Use express app to create the server
 const io = new Server(httpServer, {
   cors: {
-    origin: "https://tictactoe-react-game-one.vercel.app/",
+    origin: [
+      "http://localhost:5173",
+      "https://tictactoe-react-game-one.vercel.app",
+    ], // Add your deployed frontend URL here
+    methods: ["GET", "POST"],
   },
 });
 
@@ -124,7 +129,7 @@ app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {
   console.log(`Server running on port http://localhost:${PORT}`);
 });
