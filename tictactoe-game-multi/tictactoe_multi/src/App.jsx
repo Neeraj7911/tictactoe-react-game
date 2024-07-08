@@ -9,6 +9,7 @@ import Square from "./square/square.jsx"; // Ensure the path is correct
 import io from "socket.io-client";
 import Swal from "sweetalert2"; // Correct import for SweetAlert2
 
+const socket = io('https://tictactoe-server-pheq.onrender.com/');
 const initialGameState = [
   [null, null, null],
   [null, null, null],
