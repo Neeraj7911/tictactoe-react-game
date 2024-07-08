@@ -7,7 +7,7 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "https://tictactoe-react-game-puce.vercel.app", // Update with your frontend URL
+    origin: "https://tictactoe-react-game-ten.vercel.app/", // Update with your frontend URL
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type"],
     credentials: true, // Allow cookies to be sent
