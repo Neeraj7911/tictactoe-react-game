@@ -1,28 +1,25 @@
-const express = require('express');
-const { createServer } = require('http');
-const { Server } = require('socket.io');
+const { createServer } = require("http");
+const { Server } = require("socket.io");
 
-const app = express();
-const httpServer = createServer(app);
+const httpServer = createServer();
 const io = new Server(httpServer, {
-  cors: {
-    origin: 'https://tictactoe-react-game-one.vercel.app',
-    methods: ['GET', 'POST']
-  }
+  cors: "https://tictactoe-react-game-one.vercel.app/",
 });
 
 const allUsers = {};
 
-io.on('connection', (socket) => {
+io.on("connection", (socket) => {
   allUsers[socket.id] = {
     socket: socket,
     online: true,
     playing: false,
-    playerName: null,
-    gameBoard: Array(3).fill(null).map(() => Array(3).fill(null))
+    playerName: null, // Add playerName here
+    gameBoard: Array(3)
+      .fill(null)
+      .map(() => Array(3).fill(null)),
   };
 
-  socket.on('request_to_play', (data) => {
+  socket.on("request_to_play", (data) => {
     const currentUser = allUsers[socket.id];
     currentUser.playerName = data.playerName;
 
@@ -39,42 +36,44 @@ io.on('connection', (socket) => {
       currentUser.playing = true;
       opponentPlayer.playing = true;
 
-      currentUser.socket.emit('OpponentFound', {
-        opponentName: opponentPlayer.playerName
+      currentUser.socket.emit("OpponentFound", {
+        opponentName: opponentPlayer.playerName,
       });
-      opponentPlayer.socket.emit('OpponentFound', {
-        opponentName: currentUser.playerName
+      opponentPlayer.socket.emit("OpponentFound", {
+        opponentName: currentUser.playerName,
       });
 
-      currentUser.socket.emit('start_game', {
+      // Emit start_game event to both players
+      currentUser.socket.emit("start_game", {
         opponent: opponentPlayer.playerName,
-        gameBoard: currentUser.gameBoard
+        gameBoard: currentUser.gameBoard,
       });
-      opponentPlayer.socket.emit('start_game', {
+      opponentPlayer.socket.emit("start_game", {
         opponent: currentUser.playerName,
-        gameBoard: opponentPlayer.gameBoard
+        gameBoard: opponentPlayer.gameBoard,
       });
     } else {
-      currentUser.socket.emit('OpponentNotFound');
+      currentUser.socket.emit("OpponentNotFound");
     }
   });
 
-  socket.on('disconnect', () => {
+  socket.on("disconnect", function () {
     if (allUsers[socket.id]) {
       allUsers[socket.id].online = false;
       allUsers[socket.id].playing = false;
 
+      // Notify the opponent if the player disconnects during a game
       for (const key in allUsers) {
         const user = allUsers[key];
         if (user.playing && user.socket !== socket) {
-          user.socket.emit('opponent_disconnected');
+          user.socket.emit("opponent_disconnected");
           user.playing = false;
         }
       }
     }
   });
 
-  socket.on('player_move', ({ rowIndex, colIndex, move }) => {
+  socket.on("player_move", ({ rowIndex, colIndex, move }) => {
     const currentUser = allUsers[socket.id];
     if (currentUser && currentUser.playing) {
       currentUser.gameBoard[rowIndex][colIndex] = move;
@@ -82,49 +81,39 @@ io.on('connection', (socket) => {
       for (const key in allUsers) {
         const opponent = allUsers[key];
         if (opponent.playing && opponent.socket !== socket) {
-          opponent.socket.emit('opponent_move', {
+          opponent.socket.emit("opponent_move", {
             rowIndex,
             colIndex,
             move,
-            gameBoard: currentUser.gameBoard
+            gameBoard: currentUser.gameBoard,
           });
         }
       }
     }
   });
 
-  socket.on('player_won', ({ winningLine }) => {
+  socket.on("player_won", ({ winningLine }) => {
     const currentUser = allUsers[socket.id];
     if (currentUser && currentUser.playing) {
       for (const key in allUsers) {
         const opponent = allUsers[key];
         if (opponent.playing && opponent.socket !== socket) {
-          opponent.socket.emit('opponent_won', { winningLine });
+          opponent.socket.emit("opponent_won", { winningLine });
         }
       }
     }
   });
 
-  socket.on('game_draw', () => {
+  socket.on("game_draw", () => {
     const currentUser = allUsers[socket.id];
     if (currentUser && currentUser.playing) {
       for (const key in allUsers) {
         const opponent = allUsers[key];
         if (opponent.playing && opponent.socket !== socket) {
-          opponent.socket.emit('draw');
+          opponent.socket.emit("draw");
         }
       }
     }
   });
 });
-
-// Basic route for debugging
-app.get('/', (req, res) => {
-  res.send('Server is running');
-});
-
-// Vercel assigns a port in the PORT environment variable
-const PORT = process.env.PORT || 3000;
-httpServer.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+httpServer.listen(3000);
