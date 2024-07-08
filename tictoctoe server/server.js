@@ -6,7 +6,7 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "https://tictactoe-react-game-one.vercel.app", // Fixed CORS origin
+    origin: "https://tictactoe-react-game-one.vercel.app/", // Fixed CORS origin
     methods: ["GET", "POST"]
   }
 });
