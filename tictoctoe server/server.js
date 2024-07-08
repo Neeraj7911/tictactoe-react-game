@@ -7,9 +7,7 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: [
-      "https://tictactoe-react-game-one.vercel.app", // Add your deployed frontend URL here
-    ],
+    origin: "*",
     methods: ["GET", "POST"],
   },
 });
