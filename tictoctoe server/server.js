@@ -1,15 +1,15 @@
-const express = require("express"); // Add express
+const express = require("express");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
 
-const app = express(); // Create express app
-const httpServer = createServer(app); // Use express app to create the server
+const app = express();
+const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
     origin: [
-      "https://tictactoe-react-game-one.vercel.app",
-    ], // Add your deployed frontend URL here
+      "https://tictactoe-react-game-one.vercel.app", // Add your deployed frontend URL here
+    ],
     methods: ["GET", "POST"],
   },
 });
