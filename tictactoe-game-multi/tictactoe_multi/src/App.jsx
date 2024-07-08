@@ -223,7 +223,7 @@ function App() {
       setPlayerName(name);
 
       // Emit the player's name to the server
-      const newSocket = io("https://tictactoe-server-tan.vercel.app/", {
+      const newSocket = io("https://tictactoe-react-game-server.vercel.app/", {
         autoConnect: false,
       });
       newSocket.connect(); // Connect the socket when Play Online is clicked
