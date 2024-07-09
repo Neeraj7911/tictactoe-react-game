@@ -8,19 +8,11 @@ const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
     origin: "https://tictactoe-react-game-ten.vercel.app/", // Update with your frontend URL
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST","HEAD","PUT","PATCH","DELETE"],
     allowedHeaders: ["Content-Type"],
     credentials: true, // Allow cookies to be sent
   },
 });
-
-const corsOptions = {
-  origin: 'https://tictactoe-react-game-ten.vercel.app',
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true, // If you're using cookies or authentication
-};
-
-app.use(cors(corsOptions));
 
 const allUsers = {};
 
