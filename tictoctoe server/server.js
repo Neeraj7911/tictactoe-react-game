@@ -14,6 +14,10 @@ const io = new Server(httpServer, {
   },
 });
 
+app.use(cors({
+    origin: 'https://tictactoe-react-game-ten.vercel.app' 
+}));
+
 const allUsers = {};
 
 io.on("connection", (socket) => {
