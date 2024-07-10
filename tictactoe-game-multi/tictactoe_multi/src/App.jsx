@@ -1,15 +1,12 @@
-/* eslint-disable react/no-unescaped-entities */
-/* eslint-disable no-undef */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
+/* eslint-disable react/no-unescaped-entities */
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import Players from "./players/Players";
 import Square from "./square/square.jsx"; // Ensure the path is correct
 import io from "socket.io-client";
 import Swal from "sweetalert2"; // Correct import for SweetAlert2
-
-const socket = io('https://tictactoe-server-1.azurewebsites.net/');
 
 const initialGameState = [
   [null, null, null],
@@ -24,7 +21,7 @@ function App() {
   const [winningPath, setWinningPath] = useState([]);
   const [playOnline, setPlayOnline] = useState(false); // State to track if playing online
   const [playVsComputer, setPlayVsComputer] = useState(false); // State to track if playing vs computer
-  const [socketClient, setSocketClient] = useState(null);
+  const [socket, setSocket] = useState(null);
   const [playerName, setPlayerName] = useState("");
   const [opponentName, setOpponentName] = useState(null);
   const [showResetButton, setShowResetButton] = useState(false);
@@ -32,18 +29,20 @@ function App() {
 
   useEffect(() => {
     if (playVsComputer && currentPlayer === "O" && !winner) {
-      const [bestMoveRow, bestMoveCol] = findBestMove(gameState);
-      handleSquareClick(bestMoveRow, bestMoveCol);
+      setTimeout(() => {
+        const [bestMoveRow, bestMoveCol] = findBestMove(gameState);
+        handleSquareClick(bestMoveRow, bestMoveCol);
+      }, 900); // Delay the computer move by 0.9 seconds
     }
   }, [currentPlayer, playVsComputer, gameState, winner]);
 
   useEffect(() => {
-    if (socketClient) {
-      socketClient.on("start_game", ({ opponent }) => {
+    if (socket) {
+      socket.on("start_game", ({ opponent }) => {
         setOpponentName(opponent);
       });
 
-      socketClient.on("opponent_move", ({ rowIndex, colIndex, move }) => {
+      socket.on("opponent_move", ({ rowIndex, colIndex, move }) => {
         setGameState((prevGameState) => {
           const newGameState = prevGameState.map((row, rIdx) =>
             row.map((cell, cIdx) =>
@@ -56,33 +55,45 @@ function App() {
         setIsPlayerTurn(true); // Opponent has moved, now it's player's turn
       });
 
-      socketClient.on("opponent_won", ({ winningLine }) => {
+      socket.on("opponent_won", ({ winningLine }) => {
         setWinner("O"); // Opponent ('O') won
         setWinningPath(winningLine);
       });
 
-      socketClient.on("draw", () => {
+      socket.on("draw", () => {
         setWinner("draw");
       });
 
-      // Handle opponent disconnection
-      socketClient.on("opponent_disconnected", () => {
+      socket.on("player_joined", ({ playerName }) => {
         Swal.fire({
-          title: "Opponent Disconnected",
-          text: "Your opponent has left the game.",
-          icon: "warning",
+          title: "Welcome!",
+          text: `${playerName} has joined the game.`,
+          icon: "success",
           confirmButtonText: "OK",
-        }).then(() => {
-          setGameState(initialGameState);
-          setCurrentPlayer("X");
-          setWinner(null);
-          setWinningPath([]);
-          setOpponentName(null);
-          setPlayOnline(false);
         });
       });
+
+      socket.on("opponent_joined", ({ playerName }) => {
+        Swal.fire({
+          title: "New Player!",
+          text: `${playerName} has joined the game.`,
+          icon: "info",
+          confirmButtonText: "OK",
+        });
+      });
+
+      socket.on("opponent_disconnected", ({ playerName }) => {
+        Swal.fire({
+          title: "Player Left",
+          text: `${playerName} has left the game.`,
+          icon: "warning",
+          confirmButtonText: "OK",
+        });
+        setOpponentName(null); // Reset opponent name
+        resetGame(); // Reset the game when the opponent disconnects
+      });
     }
-  }, [socketClient]);
+  }, [socket]);
 
   useEffect(() => {
     if (winner) {
@@ -170,10 +181,10 @@ function App() {
 
     setGameState(newGameState);
     setCurrentPlayer(nextPlayer);
-    setIsPlayerTurn(false); // Player has moved, now it's opponent's turn
+    setIsPlayerTurn(nextPlayer === "X"); // Update turn indicator based on next player
 
     if (playOnline) {
-      socketClient.emit("player_move", {
+      socket.emit("player_move", {
         rowIndex,
         colIndex,
         move: currentPlayer,
@@ -185,12 +196,12 @@ function App() {
       setWinner(currentPlayer); // Current player wins
       setWinningPath(winningLine);
       if (playOnline) {
-        socketClient.emit("player_won", { winningLine });
+        socket.emit("player_won", { winningLine });
       }
     } else if (newGameState.flat().every((cell) => cell)) {
       setWinner("draw"); // It's a draw
       if (playOnline) {
-        socketClient.emit("draw");
+        socket.emit("draw");
       }
     }
   };
@@ -224,57 +235,59 @@ function App() {
       const name = result.value;
       setPlayerName(name);
 
-      // Emit the player's name to the server
-    const newSocket = io('https://tictactoe-server-1.azurewebsites.net/', {
-        autoConnect: false,
-      }); // Correct server URL
-      newSocket.connect(); // Connect the socket when Play Online is clicked
-      setSocketClient(newSocket);
-      newSocket.emit("request_to_play", {
-        playerName: name,
-      });
-
-      // Proceed with starting the game or other logic here
-      console.log(`Player name is: ${name}`);
-      setPlayOnline(true);
-
-      // Listen for opponent found event
-      newSocket.on("start_game", ({ opponent }) => {
-        setOpponentName(opponent);
-      });
+      return name;
     } else {
       // Logic to handle cancellation or returning to the home page
       console.log("Returning to home page");
       window.location.href = "/";
+      return null;
     }
   };
 
-  useEffect(() => {
-    if (socketClient) {
-      socketClient.on("connect", () => {
-        console.log("Connected to server");
-      });
+  socket?.on("connect", function () {
+    setPlayOnline(true);
+  });
 
-      socketClient.on("OpponentNotFound", () => {
-        setOpponentName(false);
-      });
+  socket?.on("OpponentNotFound", () => {
+    setOpponentName(false);
+  });
 
-      socketClient.on("OpponentFound", (data) => {
-        setOpponentName(data.opponentName);
-      });
-    }
-  }, [socketClient]);
+  socket?.on("OpponentFound", (data) => {
+    setOpponentName(data.opponentName);
+  });
 
   const handlePlayOnlineClick = () => {
-    takePlayerName();
+    takePlayerName().then((name) => {
+      if (name) {
+        const newSocket = io("https://tictactoe-server-1.azurewebsites.net/", {
+          autoConnect: false,
+        });
+        newSocket.connect(); // Connect the socket when Play Online is clicked
+        setSocket(newSocket);
+        newSocket.emit("request_to_play", {
+          playerName: name,
+        });
+
+        // Proceed with starting the game or other logic here
+        console.log(`Player name is: ${name}`);
+        setPlayOnline(true);
+
+        // Listen for opponent found event
+        newSocket.on("start_game", ({ opponent }) => {
+          setOpponentName(opponent);
+        });
+      }
+    });
   };
 
   const handlePlayVsComputerClick = () => {
-    setPlayVsComputer(true);
-    setPlayOnline(false); // Ensure online play is not active
+    takePlayerName().then((name) => {
+      if (name) {
+        setPlayVsComputer(true);
+      }
+    });
   };
 
-  // Minimax Algorithm Implementation
   const scores = {
     X: -10,
     O: 10,
